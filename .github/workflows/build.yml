@@ -1,0 +1,51 @@
+name: PlatformIO Build
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Cache pip packages
+              uses: actions/cache@v4
+              with:
+                path: ~/.cache/pip
+                key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+                restore-keys: |
+                    ${{ runner.os }}-pip-
+
+            - name: Cache PlatformIO
+              uses: actions/cache@v4
+              with:
+                  path: ~/.platformio
+                  key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: '3.11'
+
+            - name: Install PlatformIO Core
+              run: pip install --upgrade platformio
+
+            - name: Build firmware and filesystem
+              run: pio ci --prokect-conf=platformio.ini src/
+              working-directory: ./
+
+            - name: Upload built Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build-artifacts-${{ github.sha }}
+                  path: |
+                      .pio/build/*/firmware.*
+                      .pio/build/*/*.bin
+                  retention-days: 30
