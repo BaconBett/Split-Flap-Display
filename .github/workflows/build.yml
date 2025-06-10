@@ -38,7 +38,7 @@ jobs:
               run: pip install --upgrade platformio
 
             - name: Build firmware and filesystem
-              run: pio ci --prokect-conf=platformio.ini src/
+              run: pio ci --project-conf=platformio.ini src/
               working-directory: ./
 
             - name: Upload built Artifacts
